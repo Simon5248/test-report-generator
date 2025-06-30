@@ -1,0 +1,141 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f7f6;
+    color: #333;
+}
+
+.container {
+    max-width: 1000px;
+    margin: auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+h1, h2 {
+    color: #0056b3;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 10px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+}
+
+input[type="text"], input[type="date"], textarea, select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.test-case {
+    border: 1px solid #dcdcdc;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 6px;
+    background-color: #fafafa;
+    position: relative;
+}
+
+.test-case-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.3s;
+}
+
+.btn-primary { background-color: #007bff; }
+.btn-primary:hover { background-color: #0056b3; }
+.btn-secondary { background-color: #28a745; }
+.btn-secondary:hover { background-color: #218838; }
+.btn-danger { background-color: #dc3545; font-size: 0.8rem; padding: 5px 10px; }
+.btn-danger:hover { background-color: #c82333; }
+
+#report-output {
+    margin-top: 30px;
+    border: 1px solid #ccc;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 6px;
+}
+
+.report-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.report-table th, .report-table td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.report-table th {
+    background-color: #f2f2f2;
+    font-weight: bold;
+}
+
+.result-Pass { color: #28a745; font-weight: bold; }
+.result-Fail { color: #dc3545; font-weight: bold; }
+.result-N\/A { color: #6c757d; font-weight: bold; }
+
+.remove-case-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+#copy-btn-container {
+    text-align: right;
+    margin-top: 15px;
+}
+
+/* Quill editor styles */
+.ql-container {
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.ql-toolbar {
+    border: 1px solid #ccc;
+    border-radius: 4px 4px 0 0;
+}
+
+.ql-editor {
+    min-height: 150px;
+}
