@@ -122,7 +122,7 @@ class TestReportTool {
      * 手動控制的 PDF 生成方法
      */
     downloadPDF() {
-        console.log("手動模式啟動，準備產生 PDF...");
+        console.log("手動模式啟動，準備產生壓縮 PDF...");
         const element = this.reportOutput;
         const downloadBtn = element.querySelector('#downloadReportBtn');
         const projectName = document.getElementById('projectName').value || 'report';
@@ -132,41 +132,38 @@ class TestReportTool {
         html2canvas(element, { useCORS: true, scale: 2 }).then(canvas => {
             if (downloadBtn) downloadBtn.style.visibility = 'visible';
 
-            const imgData = canvas.toDataURL('image/png');
+            const imgData = canvas.toDataURL('image/jpeg', 0.7); // 調整圖片品質 (0.7 表示 70% 品質)
 
-            // --- 【關鍵修改處】 ---
-            // 從我們獨立引入的 jspdf.js 中取得 jsPDF 的建構函式
             const { jsPDF } = window.jspdf;
             const pdf = new jsPDF({
                 orientation: 'p',
                 unit: 'pt',
-                format: 'a4'
+                format: 'a4',
+                compress: true // 啟用壓縮
             });
-            // --------------------
 
             const imgProps = pdf.getImageProperties(imgData);
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
             const margin = 30;
-            
+
             const imgWidth = pdfWidth - margin * 2;
             const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
 
             let heightLeft = imgHeight;
             let position = margin;
 
-            pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+            pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
             heightLeft -= (pdfHeight - margin * 2);
 
             while (heightLeft > 0) {
                 position = heightLeft - imgHeight + margin;
                 pdf.addPage();
-                pdf.addImage(imgData, 'PNG', margin, position, imgWidth, imgHeight);
+                pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
                 heightLeft -= (pdfHeight - margin * 2);
             }
 
             pdf.save(`test-report-${projectName}.pdf`);
-
         }).catch(error => {
             console.error("手動 PDF 生成過程中發生錯誤！", error);
             if (downloadBtn) downloadBtn.style.visibility = 'visible';
