@@ -89,7 +89,32 @@ class TestReportTool {
             detailsContent += `<div class="report-detail-item"><h4>${index + 1}. ${caseName}</h4><p><strong>測試結果:</strong> <span class="status-${caseStatus.toLowerCase()}">${caseStatus}</span></p><div><strong>詳細描述:</strong></div><div class="quill-content-render">${quillContent}</div></div>`;
         });
         if (testCases.length === 0) detailsContent = '<p>沒有可報告的測試案例。</p>';
-        const reportHTML = `<h2>測試結果總覽</h2><div class="chart-container" style="max-width: 400px; margin: auto;"><canvas id="resultsChart"></canvas></div><hr><h2>詳細報告</h2><div id="report-details">${detailsContent}</div><br><button id="downloadReportBtn" class="btn btn-secondary">下載 PDF 報告</button>`;
+        const reportHTML = `
+            <style>
+                .report-detail-item img {
+                    max-width: 100% !important;
+                    height: auto !important;
+                    display: block;
+                    margin: 10px 0;
+                }
+                .quill-content-render {
+                    word-wrap: break-word;
+                    overflow-wrap: break-word;
+                }
+                .quill-content-render p {
+                    margin: 8px 0;
+                }
+            </style>
+            <h2>測試結果總覽</h2>
+            <div class="chart-container" style="max-width: 400px; margin: auto;">
+                <canvas id="resultsChart"></canvas>
+            </div>
+            <hr>
+            <h2>詳細報告</h2>
+            <div id="report-details">${detailsContent}</div>
+            <br>
+            <button id="downloadReportBtn" class="btn btn-secondary">下載 PDF 報告</button>
+        `;
         this.reportOutput.innerHTML = reportHTML;
         this.reportOutput.style.display = 'block';
         this.generateChart(chartData);
@@ -123,13 +148,19 @@ class TestReportTool {
      */
     downloadPDF() {
         console.log("手動模式啟動，準備產生壓縮 PDF...");
+        
         const element = this.reportOutput;
         const downloadBtn = element.querySelector('#downloadReportBtn');
         const projectName = document.getElementById('projectName').value || 'report';
 
         if (downloadBtn) downloadBtn.style.visibility = 'hidden';
 
-        html2canvas(element, { useCORS: true, scale: 2 }).then(canvas => {
+        // 使用簡單的 html2canvas 配置
+        html2canvas(element, { 
+            useCORS: true, 
+            scale: 1.5,
+            backgroundColor: '#ffffff'
+        }).then(canvas => {
             if (downloadBtn) downloadBtn.style.visibility = 'visible';
 
             const imgData = canvas.toDataURL('image/jpeg', 0.7); // 調整圖片品質 (0.7 表示 70% 品質)
@@ -146,27 +177,80 @@ class TestReportTool {
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
             const margin = 30;
+            const availableWidth = pdfWidth - margin * 2;
+            const availableHeight = pdfHeight - margin * 2;
 
-            const imgWidth = pdfWidth - margin * 2;
-            const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+            // 計算圖片適合的尺寸，並檢查是否需要縮小
+            let imgWidth, imgHeight;
+            
+            // 如果原圖寬度超過可用寬度，進行等比例縮小
+            if (imgProps.width > availableWidth) {
+                const scaleRatio = availableWidth / imgProps.width;
+                imgWidth = availableWidth;
+                imgHeight = imgProps.height * scaleRatio;
+                
+                console.log(`圖片寬度 ${imgProps.width}pt 超過可用寬度 ${availableWidth}pt，按比例 ${scaleRatio.toFixed(2)} 縮小`);
+            } else {
+                // 圖片寬度未超過，但仍需要檢查是否需要按可用寬度調整
+                imgWidth = Math.min(imgProps.width, availableWidth);
+                imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+            }
 
-            let heightLeft = imgHeight;
-            let position = margin;
-
-            pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
-            heightLeft -= (pdfHeight - margin * 2);
-
-            while (heightLeft > 0) {
-                position = heightLeft - imgHeight + margin;
-                pdf.addPage();
-                pdf.addImage(imgData, 'JPEG', margin, position, imgWidth, imgHeight);
-                heightLeft -= (pdfHeight - margin * 2);
+            // 如果圖片高度小於等於頁面高度，直接放置
+            if (imgHeight <= availableHeight) {
+                pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
+            } else {
+                // 圖片需要分頁處理
+                let sourceY = 0;
+                let remainingHeight = imgHeight;
+                
+                while (remainingHeight > 0) {
+                    // 計算當前頁面可以放置的圖片高度
+                    const pageImgHeight = Math.min(remainingHeight, availableHeight);
+                    
+                    // 計算在原圖中的裁切比例
+                    const cropRatio = pageImgHeight / imgHeight;
+                    const cropHeight = imgProps.height * cropRatio;
+                    
+                    // 創建裁切後的 canvas
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCanvas.width = canvas.width;
+                    tempCanvas.height = cropHeight * (canvas.width / imgProps.width);
+                    
+                    // 繪製裁切的部分
+                    tempCtx.drawImage(
+                        canvas,
+                        0, sourceY * (canvas.height / imgProps.height),
+                        canvas.width, tempCanvas.height,
+                        0, 0,
+                        canvas.width, tempCanvas.height
+                    );
+                    
+                    // 轉換為 base64 並添加到 PDF
+                    const croppedImgData = tempCanvas.toDataURL('image/jpeg', 0.7);
+                    pdf.addImage(croppedImgData, 'JPEG', margin, margin, imgWidth, pageImgHeight);
+                    
+                    // 更新位置和剩餘高度
+                    sourceY += cropHeight;
+                    remainingHeight -= pageImgHeight;
+                    
+                    // 如果還有剩餘內容，添加新頁面
+                    if (remainingHeight > 0) {
+                        pdf.addPage();
+                    }
+                }
             }
 
             pdf.save(`test-report-${projectName}.pdf`);
+            
+            console.log("PDF 生成完成！");
         }).catch(error => {
             console.error("手動 PDF 生成過程中發生錯誤！", error);
             if (downloadBtn) downloadBtn.style.visibility = 'visible';
+            
+            // 簡單的錯誤提示
+            alert('PDF 生成失敗，請重新嘗試');
         });
     }
 }
