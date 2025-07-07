@@ -54,7 +54,7 @@ class TestReportTool {
         this.testCasesContainer.insertAdjacentHTML('beforeend', testCaseHTML);
         const quill = new Quill(`#quill-editor-${caseId}`, {
             theme: 'snow',
-            modules: { toolbar: [['bold', 'italic', 'underline'],[{ 'list': 'ordered'}, { 'list': 'bullet' }],['link', 'image'],['clean']] },
+            modules: { toolbar: [['bold', 'italic', 'underline'],[{'color':[]},{'background':[]}],[{ 'list': 'ordered'}, { 'list': 'bullet' }],['link', 'image'],['clean']] },
             placeholder: '在此描述測試的實際結果，可貼上截圖...'
         });
         this.quillInstances.set(caseId, quill);
@@ -228,7 +228,7 @@ class TestReportTool {
                     );
                     
                     // 轉換為 base64 並添加到 PDF
-                    const croppedImgData = tempCanvas.toDataURL('image/jpeg', 0.7);
+                    const croppedImgData = tempCanvas.toDataURL('image/jpeg', 0.9);
                     pdf.addImage(croppedImgData, 'JPEG', margin, margin, imgWidth, pageImgHeight);
                     
                     // 更新位置和剩餘高度
