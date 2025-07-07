@@ -106,7 +106,7 @@ class TestReportTool {
                 }
             </style>
             <h2>測試結果總覽</h2>
-            <div class="chart-container" style="max-width: 400px; margin: auto;">
+            <div class="chart-container" style="max-width: 600px; margin: auto;">
                 <canvas id="resultsChart"></canvas>
             </div>
             <hr>
@@ -122,10 +122,11 @@ class TestReportTool {
 
     generateChart(data) {
         const ctx = document.getElementById('resultsChart').getContext('2d');
+        Chart.defaults.font.size = 24; // Sets a global default font size
         new Chart(ctx, {
             type: 'doughnut',
             data: {
-                labels: data.labels,
+                labels: data.labels,                
                 datasets: [{
                     label: '測試結果',
                     data: data.values,
@@ -137,7 +138,20 @@ class TestReportTool {
             options: {
                 animation: false,
                 responsive: true,
-                plugins: { legend: { position: 'top' } }
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            },
+            // 可選：調整圖表中心空洞大小
+            cutout: '50%',
+            // 可選：增加圖表間距
+            layout: {
+                padding: {
+                    top: 20,
+                    bottom: 20
+                }
             }
         });
     }
