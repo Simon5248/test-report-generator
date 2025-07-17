@@ -80,6 +80,37 @@ class TestReportTool {
         };
         let detailsContent = '';
         const testCases = this.reportForm.querySelectorAll('.test-case');
+
+        // 取得專案資訊
+        const projectInfo = {
+            name: document.getElementById('projectName').value,
+            version: document.getElementById('projectVersion').value,
+            tester: document.getElementById('testerName').value,
+            date: document.getElementById('testDate').value
+        };
+
+        detailsContent = `
+            <table class="project-info-table" style="width:100%;max-width:500px;margin-bottom:24px;border-collapse:collapse;">
+                <tr>
+                    <th style="text-align:left;padding:8px;background:#f5f5f5;width:120px;">專案名稱</th>
+                    <td style="padding:8px;">${projectInfo.name}</td>
+                </tr>
+                <tr>
+                    <th style="text-align:left;padding:8px;background:#f5f5f5;">版本號</th>
+                    <td style="padding:8px;">${projectInfo.version}</td>
+                </tr>
+                <tr>
+                    <th style="text-align:left;padding:8px;background:#f5f5f5;">測試人員</th>
+                    <td style="padding:8px;">${projectInfo.tester}</td>
+                </tr>
+                <tr>
+                    <th style="text-align:left;padding:8px;background:#f5f5f5;">測試日期</th>
+                    <td style="padding:8px;">${projectInfo.date}</td>
+                </tr>
+            </table>
+        `;
+
+
         testCases.forEach((caseEl, index) => {
             const caseId = parseInt(caseEl.id.split('-')[2]);
             const caseName = caseEl.querySelector('.test-case-name').value || `未命名案例 #${index + 1}`;
